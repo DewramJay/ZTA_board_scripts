@@ -18,13 +18,13 @@ cursor = conn.cursor()
 # conn.commit()
 
 # Example list of connected devices
-connected_devices_list = ['ae:bc:da:7a:65:cb']
+connected_devices_list = ['']
 
 # Convert the list of connected devices to a JSON string
 connected_devices_json = json.dumps(connected_devices_list)
 
 # Update the connected_devices field in the database with the JSON string
-mac_address = '36:2e:b7:14:cb:98'
+mac_address = 'ae:bc:da:7a:65:cb'
 cursor.execute(
     "UPDATE new_devices SET connected_devices = ? WHERE mac_adress = ?", 
     (connected_devices_json, mac_address)

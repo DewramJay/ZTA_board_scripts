@@ -11,6 +11,8 @@ import sqlite3
 import json
 from scapy.layers.l2 import Ether
 
+illegal_connections = []
+
 def get_allowed_devices(device_mac):
     conn = sqlite3.connect('new_devices.db')
     cursor = conn.cursor()
@@ -60,7 +62,7 @@ def is_mac_in_database(mac_address):
     
 
 def packet_callback(packet):
-    flag = 0
+    global illegal_connections
     if packet.haslayer(Ether):
         eth_layer = packet.getlayer(Ether)
         src_mac = eth_layer.src
@@ -75,7 +77,11 @@ def packet_callback(packet):
             
             # Check if the destination IP is in the allowed list
             if dst_mac not in allowed_devices:
-                print(f"Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
+                illegal_connection = f"Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}"
+                # print(illegal_connection)
+                if illegal_connection not in illegal_connections:
+                    print(illegal_connection)
+                    illegal_connections.append(illegal_connection)
             # else:
                 # print("allowed")
     
@@ -86,3 +92,9 @@ def check_illegal(interface):
     print(f"Starting packet capture hhhhhhhhhhhhhhhhhh on {interface}...")
     # Start sniffing on the specified interface
     sniff(iface=interface, prn=packet_callback, store=0 , timeout=10)
+    if illegal_connections:
+        print("\nSummary of illegal connections:")
+        for connection in illegal_connections:
+            print(connection)
+    else:
+        print("No illegal connections detected.")

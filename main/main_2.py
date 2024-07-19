@@ -48,4 +48,4 @@ if __name__ == "__main__":
             check_illegal(interface_description)
 
     else:
-        print("No connected devices found.")
+        print("No connected devices found.")
