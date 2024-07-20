@@ -20,7 +20,10 @@ def scan_ports(target_ip):
                     open_ports.append(port)
                     if port == 22:
                         result=get_device(host)
+                        print(f"resyult{result}")
                         print(result)
+                    else:
+                        print("port 22 is not open")
                 else:
                     print("no open ports")
                         

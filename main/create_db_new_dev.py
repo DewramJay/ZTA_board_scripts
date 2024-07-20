@@ -50,7 +50,7 @@ cursor = conn.cursor()
 #     )
 # ''')
 
-cursor.execute("DELETE FROM visited_url")
+cursor.execute("DELETE FROM new_devices")
 
 
 conn.commit()
