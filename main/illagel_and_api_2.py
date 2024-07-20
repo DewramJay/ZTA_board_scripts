@@ -100,7 +100,7 @@ def store_dns_name_in_db(source_ip, src_mac, collected_data):
     conn.close()
 
 
-def process_packet(packet,target_ip, collected_data):
+def process_packet(packet,target_ip, collected_data,connecting_devices):
     global illegal_connections
     
     if 'IP' in packet:
@@ -113,38 +113,25 @@ def process_packet(packet,target_ip, collected_data):
             src_mac = packet[Ether].src if Ether in packet else 'N/A'
             dst_mac = packet[Ether].dst if Ether in packet else 'N/A'
 
-            # collected_data.append({'dns_name': dns_name, 'dest_ip': dest_ip, 'dest_mac': dst_mac})
 
             #---------------illegal connections part----------
             if is_mac_in_database(src_mac) and is_mac_in_database(dst_mac):
             # Get allowed devices for the source IP
-                allowed_devices = get_allowed_devices(src_mac)
-                # print(f'Allowed devices for {src_mac}: {allowed_devices}')
-                
-                # Check if the destination IP is in the allowed list
-                if dst_mac not in allowed_devices:
-                    illegal_connection = f"Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}"
-                    # print(illegal_connection)
-                    if illegal_connection not in illegal_connections:
-                        # print(illegal_connection)
-                        illegal_connections.append(illegal_connection)
+                connecting_devices.append({'dst_ip':dest_ip, 'dst_mac':dst_mac})
+                print("device communicates^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^666666")
+            
+            collected_data.append({'dns_name': dns_name, 'dest_ip': dest_ip, 'dest_mac': dst_mac})
+            
             
             # Store in database
-            collected_data.append({'dns_name': dns_name, 'dest_ip': dest_ip, 'dest_mac': dst_mac})
 
 
 def check_illegal(interface,device_ip,device_mac):
     collected_data =[]
-    print(f"Starting packet capture hhhhhhhhhhhhhhhhhh on {interface}...")
+    connecting_devices = []
+    print(f"Starting packet capture  on {interface}...")
     # Start sniffing on the specified interface
     sniff(iface=interface, prn=lambda x: process_packet(x, device_ip, collected_data), store=0 , timeout=10)
     if collected_data:
-        store_dns_name_in_db(device_ip, device_mac, collected_data)
+        store_dns_name_in_db(device_ip, device_mac, collected_data,connecting_devices)
         print("\nThe urls are stored to the database")
-
-    if illegal_connections:
-        print("\nSummary of illegal connections:")
-        for connection in illegal_connections:
-            print(connection)
-    else:
-        print("No illegal connections detected.")

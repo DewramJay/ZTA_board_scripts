@@ -40,17 +40,18 @@ cursor = conn.cursor()
 # ''', data)
 
 # Create the table to store the information of the api usage
-# cursor.execute('''
-#     CREATE TABLE IF NOT EXISTS visited_url (
-#         source_ip TEXT ,
-#         source_mac TEXT ,
-#         dest_ip TEXT,
-#         dest_mac TEXT,
-#         dns_name STRING    
-#     )
-# ''')
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS new_devices (
+    mac_adress TEXT PRIMARY KEY,
+    ip_address TEXT,
+    device_name TEXT,
+    status TEXT,
+    connected_devices TEXT
+)
+''')
 
-cursor.execute("DELETE FROM new_devices")
+# cursor.execute("DELETE FROM new_devices")
+# cursor.execute("DROP TABLE new_devices")
 
 
 conn.commit()
