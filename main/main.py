@@ -4,7 +4,8 @@ import time
 import sqlite3
 import json
 from check_open_por import scan_ports
-from illegal_conn import check_illegal
+# from illegal_conn import check_illegal
+from illagel_and_api import check_illegal
 # from dictionary_attack import get_device
 
 
@@ -83,6 +84,8 @@ def save_new_device(ip_address, mac_address, device_name,status):
     mac=cursor.fetchone()
     if mac:
         print("Device already exists in the database")
+        cursor.execute("UPDATE new_devices SET ip_address =? WHERE mac_adress=?",(ip_address,mac_address))
+        conn.commit()
     else:
         # cursor('')
         cursor.execute("INSERT INTO new_devices (ip_address, mac_adress, device_name, status) VALUES (?, ?, ?,?)",
@@ -107,7 +110,7 @@ if __name__ == "__main__":
                 device_mac=get_mac_address(device_ip)
                 print(f"MAC of the new device :{device_mac}")
                 save_new_device(device_ip,device_mac, '','active' )
-                check_illegal(interface_description)
+                check_illegal(interface_description,device_ip,device_mac)
                 print("----------------------------")
                 scan_ports(device_ip) #checks both the ports and the dictionary attack
 
