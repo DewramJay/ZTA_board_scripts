@@ -99,6 +99,32 @@ def store_dns_name_in_db(source_ip, src_mac, collected_data):
     conn.commit()
     conn.close()
 
+def insert_connecting_devices(device_ip, connecting_devices):
+    conn = sqlite3.connect('new_devices.db')
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT connected_devices FROM new_devices WHERE ip_address=?", (device_ip,))
+        row = cursor.fetchone()
+
+        if row:
+            existing_devices = json.loads(row[0])
+            updated_devices = list(set(existing_devices + connecting_devices))
+            cursor.execute("UPDATE new_devices SET connected_devices=? WHERE ip_address=?", (json.dumps(updated_devices), device_ip))
+        else:
+            cursor.execute("INSERT INTO new_devices (ip_address, connected_devices) VALUES (?, ?)", (device_ip, json.dumps(connecting_devices)))
+
+        conn.commit()
+
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        return False
+    except Exception as e:
+        print(f"Exception in insert_connecting_devices: {e}")
+        return False
+    finally:
+        conn.close() 
+
 
 def process_packet(packet,target_ip, collected_data,connecting_devices):
     global illegal_connections
@@ -113,25 +139,31 @@ def process_packet(packet,target_ip, collected_data,connecting_devices):
             src_mac = packet[Ether].src if Ether in packet else 'N/A'
             dst_mac = packet[Ether].dst if Ether in packet else 'N/A'
 
+            # collected_data.append({'dns_name': dns_name, 'dest_ip': dest_ip, 'dest_mac': dst_mac})
 
             #---------------illegal connections part----------
             if is_mac_in_database(src_mac) and is_mac_in_database(dst_mac):
             # Get allowed devices for the source IP
-                connecting_devices.append({'dst_ip':dest_ip, 'dst_mac':dst_mac})
-                print("device communicates^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^666666")
-            
-            collected_data.append({'dns_name': dns_name, 'dest_ip': dest_ip, 'dest_mac': dst_mac})
-            
+                if source_ip == target_ip and dst_mac not in connecting_devices:
+                    connecting_devices.append(dst_mac)
+                elif dest_ip == target_ip and src_mac not in connecting_devices:
+                    connecting_devices.append(src_mac)
+                
+                print(f"Updated connecting devices: {connecting_devices}")
             
             # Store in database
+            collected_data.append({'dns_name': dns_name, 'dest_ip': dest_ip, 'dest_mac': dst_mac})
 
 
 def check_illegal(interface,device_ip,device_mac):
-    collected_data =[]
     connecting_devices = []
-    print(f"Starting packet capture  on {interface}...")
+    collected_data =[]
+    print(f"Starting packet capture hhhhhhhhhhhhhhhhhh on {interface}...")
     # Start sniffing on the specified interface
-    sniff(iface=interface, prn=lambda x: process_packet(x, device_ip, collected_data), store=0 , timeout=10)
+    sniff(iface=interface, prn=lambda x: process_packet(x, device_ip, collected_data,connecting_devices), store=0 , timeout=10)
     if collected_data:
-        store_dns_name_in_db(device_ip, device_mac, collected_data,connecting_devices)
+        store_dns_name_in_db(device_ip, device_mac, collected_data)
         print("\nThe urls are stored to the database")
+
+    if connecting_devices:
+        insert_connecting_devices(connecting_devices)
