@@ -4,7 +4,8 @@ import time
 import threading
 import sqlite3
 from check_open_por import scan_ports
-from illagel_and_api import check_illegal
+from illagel_and_api_2 import check_illegal
+from check_vendor import get_vendor
 
 def ping_device(ip):
     try:
@@ -51,6 +52,7 @@ def operations_on_device(device_ip,interface_description):
     save_new_device(device_ip,device_mac, '','active' )
     check_illegal(interface_description,device_ip,device_mac)
     scan_ports(device_ip)
+    get_vendor(device_mac)
 
 
 def get_connected_devices_windows(stop_event):
@@ -66,7 +68,7 @@ def get_connected_devices_windows(stop_event):
 
             # Confirm connection status by pinging each IP address
             
-            active_devices = {ip for ip in connected_devices}
+            active_devices = {ip for ip in connected_devices if ping_device(ip)}
 
             # Find new devices
             new_devices = active_devices - previous_devices
