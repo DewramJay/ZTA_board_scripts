@@ -76,7 +76,7 @@ def store_in_db(device_mac, blacklist_mac):
         return {"status": "error", "message": response.text}
 
 
-def process_packet(packet, target_mac, collected_packets, blacklisted_macs,illegal_connections,unencrypted_data):
+def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_usage,unencrypted_data,illegal_connections):
     # def process_packet(packet,target_ip, collected_data,connecting_devices):
     if 'IP' in packet:
         source_ip = packet['IP'].src
@@ -93,8 +93,8 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,illeg
 
                 # print(f"Blacklisted MAC address detected: {dst_mac}")
 
-                if dst_mac not in illegal_connections:
-                    illegal_connections.append(dst_mac)
+                if dst_mac not in api_usage:
+                    api_usage.append(dst_mac)
                     # print("hhhhh")
                     store_in_db(target_mac, dst_mac)
         
@@ -104,12 +104,14 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,illeg
         if is_mac_in_database(src_mac) and is_mac_in_database(dst_mac):
             # Get allowed devices for the source IP
             allowed_devices = get_allowed_devices(src_mac)
+            print(f"allowed devices: {allowed_devices}")
             
             # Check if the destination IP is in the allowed list
             if dst_mac not in allowed_devices:
-                print(f"Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
+                print(f"Device: ({target_mac}) :Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
+                illegal_connections.append(dst_mac)
 
-        unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0])
+        unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0],target_mac)
         # print(f"unencrypted data -----: {unencrypted_data[0]}")         
 
 def delete_alerts():
@@ -123,12 +125,13 @@ def delete_alerts():
 
 
 def monitor_api(interface_description,device_mac):
-    illegal_connections = []
+    api_usage = []
     # interface_description = 'Local Area Connection* 10'
     # device_mac = '42:56:21:fc:c9:36'
     # output_file = 'packet_capture.pcap'
     collected_packets = []
     unencrypted_data = [0]
+    illegal_connections = []
     
     
     # Define the list of blacklisted MAC addresses
@@ -141,14 +144,18 @@ def monitor_api(interface_description,device_mac):
     delete_alerts()
     
     
-    sniff(iface=interface_description, prn=lambda x: process_packet(x, device_mac, collected_packets, blacklisted_macs,illegal_connections,unencrypted_data), timeout=20, store=0)
-    if illegal_connections:
-        # print(f"no of illegal conections : {len(illegal_connections)}")
-        print(f"The score for illegal connections {score_illegal_conn(len(illegal_connections))} *******************")
+    sniff(iface=interface_description, prn=lambda x: process_packet(x, device_mac, collected_packets, blacklisted_macs,api_usage,unencrypted_data,illegal_connections), timeout=20, store=0)
+    if api_usage:
+        # print(f"no of illegal conections : {len(api_usage)}")
+        print(f" Device: ({device_mac}) : The score for unauthorized api usage  {score_illegal_conn(len(api_usage))} *******************")
     
     if unencrypted_data[0]:
-        print(f"The number of unencrypted data {unencrypted_data[0]} *******************")
+        print(f"Device: ({device_mac}) :The number of unencrypted data {unencrypted_data[0]} *******************")
     else:
-        print("no unencrypted data")
+        print("Device: ({device_mac}) :no unencrypted data")
+
+    if illegal_connections:
+        # print(f"no of illegal conections : {len(api_usage)}")
+        print(f"Device: ({device_mac}) :The score for unauthorized api usage {illegal_connections} *******************")
 
         

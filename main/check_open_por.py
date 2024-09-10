@@ -6,7 +6,7 @@ from score_open_ports import score_calculation_openPorts
 
 def scan_ports(target_ip, device_mac):
     # target_ip = '192.168.137.202'
-    print('Checking for open ports..')
+    print(f'Device: ({device_mac}) :Checking for open ports..')
     nm = nmap.PortScanner()
     nm.scan(hosts=target_ip, arguments='-p 1-7700 -T4')  # Scan all ports
     result='strong'
@@ -21,8 +21,8 @@ def scan_ports(target_ip, device_mac):
                     open_ports.append(port)
                     if port == 22:
                         result=get_device(host)
-                        print(f"result{result}")
-                        print(f"The score for weak credentials {result} *******************")
+                        # print(f"result{result}")
+                        print(f"Device: ({device_mac}) :The score for weak credentials {result} *******************")
 
                         print(result)
                     else:
@@ -34,7 +34,7 @@ def scan_ports(target_ip, device_mac):
                         
     print(f"Open ports :{open_ports}")
     score_ports=score_calculation_openPorts(open_ports)
-    print(f"The score for open ports {score_ports} *******************")
+    print(f"Device: ({device_mac}) :The score for open ports {score_ports} *******************")
 
     conn = sqlite3.connect('/home/kali/Desktop/project/eval/ZTA_main_2/main/new_devices.db')
     cursor = conn.cursor()

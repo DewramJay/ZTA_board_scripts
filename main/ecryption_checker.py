@@ -1,6 +1,6 @@
 from scapy.all import *
 
-def analyze_packet(packet, unencrypted_data):
+def analyze_packet(packet, unencrypted_data,device_mac):
 
     if Raw in packet:
         payload = packet[Raw].load  
@@ -8,7 +8,7 @@ def analyze_packet(packet, unencrypted_data):
         try:
             # print("\n")
             payload.decode('ascii')
-            print("Unencrypted payload:", payload)
+            # print(f"Device: ({device_mac}) :Unencrypted payload:", payload)
             unencrypted_data += 1
         except UnicodeDecodeError:
             pass
