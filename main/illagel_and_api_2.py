@@ -99,20 +99,29 @@ def store_dns_name_in_db(source_ip, src_mac, collected_data):
     conn.commit()
     conn.close()
 
-def insert_connecting_devices(device_ip, connecting_devices):
+def update_connected_devices(device_mac, new_connections):
     conn = sqlite3.connect('new_devices.db')
     cursor = conn.cursor()
 
-    try:
-        cursor.execute("SELECT connected_devices FROM new_devices WHERE ip_address=?", (device_ip,))
+    def fetch_connected_devices(mac):
+        cursor.execute("SELECT connected_devices FROM new_devices WHERE mac_adress=?", (mac,))
         row = cursor.fetchone()
+        if row is not None and row[0] is not None:
+            return json.loads(row[0])
+        return []
 
-        if row:
-            existing_devices = json.loads(row[0])
-            updated_devices = list(set(existing_devices + connecting_devices))
-            cursor.execute("UPDATE new_devices SET connected_devices=? WHERE ip_address=?", (json.dumps(updated_devices), device_ip))
-        else:
-            cursor.execute("INSERT INTO new_devices (ip_address, connected_devices) VALUES (?, ?)", (device_ip, json.dumps(connecting_devices)))
+    def update_device(mac, connections):
+        current_connections = fetch_connected_devices(mac)
+        updated_connections = list(set(current_connections + connections))
+        cursor.execute("UPDATE new_devices SET connected_devices=? WHERE mac_adress=?", (json.dumps(updated_connections), mac))
+
+    try:
+        # Update the connecting devices for the main device
+        update_device(device_mac, new_connections)
+
+        # Update the connecting devices for each new connection to include the main device
+        for connection in new_connections:
+            update_device(connection, [device_mac])
 
         conn.commit()
 
@@ -120,19 +129,21 @@ def insert_connecting_devices(device_ip, connecting_devices):
         print(f"Database error: {e}")
         return False
     except Exception as e:
-        print(f"Exception in insert_connecting_devices: {e}")
+        print(f"Exception in update_connected_devices: {e}")
         return False
     finally:
-        conn.close() 
+        conn.close()
 
 
 def process_packet(packet,target_ip, collected_data,connecting_devices):
     global illegal_connections
     
     if 'IP' in packet:
+
         source_ip = packet['IP'].src
         dest_ip = packet['IP'].dst
         if source_ip == target_ip or dest_ip == target_ip:
+
             protocol = packet.sprintf("%IP.proto%")
             dns_name = resolve_dns(dest_ip) if dest_ip != target_ip else resolve_dns(source_ip)
             
@@ -143,13 +154,14 @@ def process_packet(packet,target_ip, collected_data,connecting_devices):
 
             #---------------illegal connections part----------
             if is_mac_in_database(src_mac) and is_mac_in_database(dst_mac):
+
             # Get allowed devices for the source IP
                 if source_ip == target_ip and dst_mac not in connecting_devices:
                     connecting_devices.append(dst_mac)
                 elif dest_ip == target_ip and src_mac not in connecting_devices:
                     connecting_devices.append(src_mac)
                 
-                print(f"Updated connecting devices: {connecting_devices}")
+                # print(f"Updated connecting devices: {connecting_devices}")
             
             # Store in database
             collected_data.append({'dns_name': dns_name, 'dest_ip': dest_ip, 'dest_mac': dst_mac})
@@ -158,7 +170,7 @@ def process_packet(packet,target_ip, collected_data,connecting_devices):
 def check_illegal(interface,device_ip,device_mac):
     connecting_devices = []
     collected_data =[]
-    print(f"Starting packet capture hhhhhhhhhhhhhhhhhh on {interface}...")
+    print(f"Starting packet capture {device_mac}  {interface}...")
     # Start sniffing on the specified interface
     sniff(iface=interface, prn=lambda x: process_packet(x, device_ip, collected_data,connecting_devices), store=0 , timeout=10)
     if collected_data:
@@ -166,4 +178,5 @@ def check_illegal(interface,device_ip,device_mac):
         print("\nThe urls are stored to the database")
 
     if connecting_devices:
-        insert_connecting_devices(connecting_devices)
+        update_connected_devices(device_mac,connecting_devices)
+        print("\nThe connecting devices are stored to the database")

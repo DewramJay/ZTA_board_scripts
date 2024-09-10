@@ -37,7 +37,7 @@ def score_calculation_openPorts(ports):
         print(score_openPorts)
         return score_openPorts
     else:
-        return None
+        return 0
 
 # if __name__ == "__main__":
 #     score_calculation_openPorts()

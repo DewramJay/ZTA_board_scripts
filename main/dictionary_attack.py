@@ -50,10 +50,12 @@ def get_device(device):
             t.join()
         
         if result['found']:
-            return "The credentials of this device are weak"
+            #weak
+            return 1
     
         else:
-            return "The credentials of this device are not weak"
+            #strong
+            return 0
     
 # if __name__ == '__main__':
 #     device = '192.168.137.148'  # Replace with the target IP address
