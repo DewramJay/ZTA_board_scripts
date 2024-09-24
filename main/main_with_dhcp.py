@@ -25,9 +25,10 @@ def update_device_status(inactive_devices):
         for ip, mac in inactive_devices.items():
             if not ping_device(ip):
                 print(f"999999{ping_device(ip)}")
-                cursor.execute("UPDATE new_devices SET status = ? WHERE mac_adress = ?", ('inactive', mac))
-                conn.commit()
-                print("Status updated to inactive for MAC:", mac)
+                # cursor.execute("UPDATE new_devices SET status = ? WHERE mac_adress = ?", ('inactive', mac))
+                # conn.commit()
+                # print("Status updated to inactive for MAC:", mac)
+                update_status(mac, 'inactive')
                 return True
             else:
                 print("Device is still active, not updating status for MAC:", mac)
@@ -54,6 +55,22 @@ def extract_device_info(packet):
 
         return {'ip': ip_address, 'mac': mac_address, 'hostname': hostname}
     return None
+
+######## update device status
+def update_status(mac_address, status):
+    payload = {
+        "mac_address": mac_address,
+        "status": status
+    }
+    response_update = requests.post("http://localhost:2000/api/update_device_status", json = payload)
+        
+    if response_update.status_code == 200:
+        print("Device status updated in the database")
+        return response_update.json()
+    else:
+        print(f"Failed to update device status: {response_update.status_code}, {response_update.text}")
+        return {"status": "error", "message": response_update.text}
+####################################
 
 def save_new_device(ip_address, mac_address, device_name, status):
     payload = {
@@ -96,6 +113,18 @@ def save_new_device(ip_address, mac_address, device_name, status):
         print(f"Failed to check device existence: {check_response.status_code}, {check_response.text}")
         return {"status": "error", "message": check_response.text}
 
+def re_evaluate(device_mac):
+    
+    # Check if the device exists
+    check_response = requests.post(f"http://localhost:2000/api/re_evaluate/{device_mac}")
+    
+    if check_response.status_code == 200:
+        # Device exists, update the IP address
+        print("re_evaluation is sheduled.")
+
+    else:
+        print("error in re_evaluation. ")
+
 
 
 def operations_on_device(device_ip, device_mac, hostname, interface_description):
@@ -106,6 +135,10 @@ def operations_on_device(device_ip, device_mac, hostname, interface_description)
     scan_ports(device_ip, device_mac)
     time.sleep(3)
     monitor_api(interface_description,device_mac)
+    #call re-evaluation endpoint
+    print("mashata prasna") 
+    re_evaluate(device_mac)
+
 
 def sniff_dhcp_packets(interface, known_devices,stop_event):
     """Sniff DHCP packets to identify new devices."""

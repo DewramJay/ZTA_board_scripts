@@ -16,29 +16,43 @@ def resolve_dns(ip):
     
 
 def get_allowed_devices(device_mac):
-    conn = sqlite3.connect('new_devices.db')
-    cursor = conn.cursor()
-
     try:
-        # Query to get the connected devices for the given MAC address
-        cursor.execute("SELECT connected_devices FROM new_devices WHERE mac_adress=?", (device_mac,))
-        row = cursor.fetchone()
+        # Send a POST request to the Flask API
+        response = requests.get(f'http://localhost:5000/allowed_devices/{device_mac}')
 
-        if row and row[0]:
-            # Load the allowed devices from JSON string
-            allowed_devices = json.loads(row[0])
-            return set(allowed_devices)  # Return as a set for easy comparison
+        # Check if the request was successful
+        if response.status_code == 200:
+            return response.json()  # Return the response in JSON format
+        else:
+            return {"error": "Failed to get connected devices", "status_code": response.status_code}
 
-        return set()  # Return an empty set if no devices are found
+    except requests.exceptions.RequestException as e:
+        # Handle any request-related errors
+        return {"error": str(e)}
 
-    except sqlite3.Error as e:
-        print(f"Database error: {e}")
-        return set()
-    except Exception as e:
-        print(f"Exception in get_allowed_devices: {e}")
-        return set()
-    finally:
-        conn.close()
+    # conn = sqlite3.connect('new_devices.db')
+    # cursor = conn.cursor()
+
+    # try:
+    #     # Query to get the connected devices for the given MAC address
+    #     cursor.execute("SELECT connected_devices FROM new_devices WHERE mac_adress=?", (device_mac,))
+    #     row = cursor.fetchone()
+
+    #     if row and row[0]:
+    #         # Load the allowed devices from JSON string
+    #         allowed_devices = json.loads(row[0])
+    #         return set(allowed_devices)  # Return as a set for easy comparison
+
+    #     return set()  # Return an empty set if no devices are found
+
+    # except sqlite3.Error as e:
+    #     print(f"Database error: {e}")
+    #     return set()
+    # except Exception as e:
+    #     print(f"Exception in get_allowed_devices: {e}")
+    #     return set()
+    # finally:
+    #     conn.close()
 
 def is_mac_in_database(mac_address):
     conn = sqlite3.connect('new_devices.db')

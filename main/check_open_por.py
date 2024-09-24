@@ -1,6 +1,7 @@
 import nmap
 import sqlite3
 import json
+import requests
 from dictionary_attack import get_device
 from score_open_ports import score_calculation_openPorts
 
@@ -36,23 +37,25 @@ def scan_ports(target_ip, device_mac):
     score_ports=score_calculation_openPorts(open_ports)
     print(f"Device: ({device_mac}) :The score for open ports {score_ports} *******************")
 
-    conn = sqlite3.connect('/home/kali/Desktop/project/eval/ZTA_main_2/main/new_devices.db')
-    cursor = conn.cursor()
+    # conn = sqlite3.connect('/home/kali/Desktop/project/eval/ZTA_main_2/main/new_devices.db')
+    # cursor = conn.cursor()
 
-    cursor.execute("SELECT mac_address FROM evaluation WHERE mac_address = ?", (device_mac,))
-    mac=cursor.fetchone()
-    if mac:
-        # print("Device already exists in the database")
-        cursor.execute("UPDATE evaluation SET open_ports = ?, password_status = ? WHERE mac_address = ?",(json.dumps(open_ports), result ,device_mac))
-        conn.commit()
-        print(result)
-    else:
-        # cursor('')
-        cursor.execute("INSERT INTO evaluation (ip_address, mac_address, open_ports, password_status) VALUES (?, ?, ?,?)",
-                    (target_ip, device_mac, json.dumps(open_ports), result))
-        conn.commit()
-        conn.close()
-        print("Data added to the database")
+    # cursor.execute("SELECT mac_address FROM evaluation WHERE mac_address = ?", (device_mac,))
+    # mac=cursor.fetchone()
+    # if mac:
+    #     # print("Device already exists in the database")
+    #     cursor.execute("UPDATE evaluation SET open_ports = ?, password_status = ? WHERE mac_address = ?",(json.dumps(open_ports), result ,device_mac))
+    #     conn.commit()
+    #     print(result)
+    # else:
+    #     # cursor('')
+    #     cursor.execute("INSERT INTO evaluation (ip_address, mac_address, open_ports, password_status) VALUES (?, ?, ?,?)",
+    #                 (target_ip, device_mac, json.dumps(open_ports), result))
+    #     conn.commit()
+    #     conn.close()
+    #     print("Data added to the database")
+
+    update_evaluation(device_mac, target_ip, json.dumps(open_ports), result)
     
  
     return open_ports,result,score_ports
@@ -68,6 +71,30 @@ def scan_ports(target_ip, device_mac):
 #     print(open_ports)
 #     conn.close()
 #     return open_ports
+
+
+######## update device status
+def update_evaluation(mac_address, ip_address, open_ports, password):
+    payload = {
+        "mac_address": mac_address,
+        "ip_address": ip_address,
+        "open_ports": open_ports,
+        "password": password
+    }
+    try:
+        # Send a POST request to the Flask API
+        response = requests.post('http://localhost:2000/api/update_evaluation', json=payload)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            return response.json()  # Return the response in JSON format
+        else:
+            return {"error": "Failed to update device", "status_code": response.status_code}
+
+    except requests.exceptions.RequestException as e:
+        # Handle any request-related errors
+        return {"error": str(e)}
+####################################
 
 
 
