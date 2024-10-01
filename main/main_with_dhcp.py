@@ -7,12 +7,93 @@ import requests
 from check_open_por import scan_ports
 from illagel_and_api_2 import check_illegal
 from check_vendor import get_vendor
-# from api_usage import monitor_api
 from api_and_illegal import monitor_api
 from scapy.all import *
+import socketio
+from flask import Flask, request, jsonify  # Import Flask and request
 
-#ping the devic and check if it is still available
-#in the previous version (main_thread) it used ttl something, but here just pinging
+# Initialize Flask app
+app = Flask(__name__)
+
+#####################################################
+# Standard Python
+sio = socketio.Client()
+
+@sio.event
+def connect():
+    print("Connection established with Flask server")
+
+@sio.event
+def disconnect():
+    print("Disconnected from Flask server")
+
+# Listening to the re_evaluate event from Flask backend
+@sio.on('re_evaluate')
+def handle_re_evaluate_event(data):
+    device_ip = data['device_ip']
+    device_mac = data['device_mac']
+    hostname = data['hostname']
+    interface_description = data['interface_description']
+    print(f"Re-evaluating device with IP: {device_ip}, MAC: {device_mac}, hostname: {hostname}, interface: {interface_description}")
+    
+    check_device_status(device_mac, device_ip)
+    # Call your function here
+    operations_on_device(device_ip, device_mac, hostname, interface_description)
+
+# New endpoint to trigger operations on a device
+# @app.route('/trigger_operations', methods=['POST'])
+# def trigger_operations():
+#     data = request.get_json()
+#     device_ip = data.get('device_ip')
+#     device_mac = data.get('device_mac')
+#     hostname = data.get('hostname')
+#     interface_description = data.get('interface_description')
+
+#     # Call the operations_on_device function
+#     operations_on_device(device_ip, device_mac, hostname, interface_description)
+    
+#     return jsonify({"message": "Operations triggered"}), 200
+
+# Function to connect to the Flask Socket.IO server and keep listening for events
+def start_socket_io():
+    sio.connect('http://localhost:2000')
+    sio.wait()
+
+#####################################################
+
+def check_device_status(mac_address, ip_address):
+    payload = {
+        "mac_address": mac_address,
+        "ip_address": ip_address
+    }
+    
+    try:
+        response_update = requests.get("http://localhost:2000/api/check_device_status", json=payload)
+
+        if response_update.status_code == 200:
+            result = response_update.json()
+            
+            # Check if the device status is 'active'
+            if result.get("device_status") == "active":
+                print("Device is active.")
+                return True
+            elif result.get("device_status") == "inactive":
+                print("Device is inactive.")
+                return False
+            else:
+                print(f"Unexpected status: {result.get('device_status')}")
+                return False
+
+        else:
+            print(f"Failed to retrieve device status: {response_update.status_code}, {response_update.text}")
+            return False
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return False
+
+
+# Ping the device and check if it is still available
 def ping_device(ip_address):
     """Ping a device and return True if it's reachable."""
     response = os.system(f"ping -c 1 -w {4} {ip_address} > /dev/null 2>&1")
@@ -25,9 +106,6 @@ def update_device_status(inactive_devices):
         for ip, mac in inactive_devices.items():
             if not ping_device(ip):
                 print(f"999999{ping_device(ip)}")
-                # cursor.execute("UPDATE new_devices SET status = ? WHERE mac_adress = ?", ('inactive', mac))
-                # conn.commit()
-                # print("Status updated to inactive for MAC:", mac)
                 update_status(mac, 'inactive')
                 return True
             else:
@@ -56,13 +134,13 @@ def extract_device_info(packet):
         return {'ip': ip_address, 'mac': mac_address, 'hostname': hostname}
     return None
 
-######## update device status
+# Update device status
 def update_status(mac_address, status):
     payload = {
         "mac_address": mac_address,
         "status": status
     }
-    response_update = requests.post("http://localhost:2000/api/update_device_status", json = payload)
+    response_update = requests.post("http://localhost:2000/api/update_device_status", json=payload)
         
     if response_update.status_code == 200:
         print("Device status updated in the database")
@@ -70,6 +148,7 @@ def update_status(mac_address, status):
     else:
         print(f"Failed to update device status: {response_update.status_code}, {response_update.text}")
         return {"status": "error", "message": response_update.text}
+
 ####################################
 
 def save_new_device(ip_address, mac_address, device_name, status):
@@ -113,34 +192,36 @@ def save_new_device(ip_address, mac_address, device_name, status):
         print(f"Failed to check device existence: {check_response.status_code}, {check_response.text}")
         return {"status": "error", "message": check_response.text}
 
-def re_evaluate(device_mac):
+def re_evaluate(device_ip, device_mac, hostname, interface_description):
+    payload = {
+            "ip_address": device_ip,
+            "mac_address": device_mac,
+            "hostname" : hostname,
+            "interface_description" : interface_description
+        }
     
     # Check if the device exists
-    check_response = requests.post(f"http://localhost:2000/api/re_evaluate/{device_mac}")
+    check_response = requests.post(f"http://localhost:2000/api/re_evaluate", json=payload)
     
     if check_response.status_code == 200:
         # Device exists, update the IP address
-        print("re_evaluation is sheduled.")
+        print("Re-evaluation is scheduled.")
 
     else:
-        print("error in re_evaluation. ")
-
-
+        print("Error in re-evaluation.")
 
 def operations_on_device(device_ip, device_mac, hostname, interface_description):
     """Perform operations on the device."""
     print(f"Operating on device: IP {device_ip}, MAC {device_mac}, Hostname {hostname}")
-    save_new_device(device_ip,device_mac, hostname,'active' )
-    check_illegal(interface_description,device_ip,device_mac)
+    save_new_device(device_ip, device_mac, hostname, 'active')
+    check_illegal(interface_description, device_ip, device_mac)
     scan_ports(device_ip, device_mac)
     time.sleep(3)
-    monitor_api(interface_description,device_mac)
-    #call re-evaluation endpoint
-    print("mashata prasna") 
-    re_evaluate(device_mac)
+    monitor_api(interface_description, device_mac)
+    # Call re-evaluation endpoint
+    re_evaluate(device_ip, device_mac, hostname, interface_description)
 
-
-def sniff_dhcp_packets(interface, known_devices,stop_event):
+def sniff_dhcp_packets(interface, known_devices, stop_event):
     """Sniff DHCP packets to identify new devices."""
     
     while not stop_event.is_set():
@@ -154,6 +235,7 @@ def sniff_dhcp_packets(interface, known_devices,stop_event):
                     # If the device is in the inactive list, move it back to known devices
                     print(f"Device reconnected: IP {device_info['ip']}, MAC {mac_address}, Hostname {device_info['hostname']}")
                     known_devices[mac_address] = inactive_devices.pop(mac_address)
+                    
                 else:
                     # If the device is new, add it to the known devices list
                     known_devices[mac_address] = device_info
@@ -171,47 +253,42 @@ def sniff_dhcp_packets(interface, known_devices,stop_event):
         sniff(filter="udp and (port 67 or port 68)", prn=process_packet, iface=interface, store=0)
         time.sleep(1)
 
-
-
-def monitor_devices(known_devices,stop_event, inactive_devices):
+def monitor_devices(known_devices, stop_event, inactive_devices):
     """Ping known devices periodically to check their connectivity."""
-    while not stop_event.set():
+    while not stop_event.is_set():
         for mac_address, device_info in list(known_devices.items()):
-            if not ping_device(device_info['ip']):
-                print(f"Device disconnected: IP {device_info['ip']}, MAC {mac_address}, Hostname {device_info['hostname']}")
-                # Add to inactive devices
-                if update_device_status({device_info['ip']: mac_address}):
-                    # If the device status was successfully updated to inactive
-                    # Add to inactive devices
-                    inactive_devices[mac_address] = device_info
-                    # Remove from known devices
-                    del known_devices[mac_address]
+            ip_address = device_info['ip']
+            if not ping_device(ip_address):
+                print(f"Device {mac_address} is inactive")
+                inactive_devices[device_info['ip']] = mac_address  # Move to inactive devices
+                del known_devices[mac_address]  # Remove from known devices
 
-                print(f"\nActive devices: {known_devices}")
-                print(f"inactive devices: {inactive_devices}\n")
-        
-        time.sleep(30)  # Wait before next round of pings
+            time.sleep(2)
 
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
+    interface = "wlan0"  # Replace with your network interface
     known_devices = {}
     inactive_devices = {}
-    interface = "wlan0"  # Replace with your actual interface name
     stop_event = threading.Event()
 
-    sniff_thread = threading.Thread(target=sniff_dhcp_packets, args=(interface, known_devices,stop_event))
+    # Start the Socket.IO connection in a separate thread
+    socket_io_thread = threading.Thread(target=start_socket_io)
+    socket_io_thread.start()
+
+    # Start sniffing for DHCP packets
+    sniff_thread = threading.Thread(target=sniff_dhcp_packets, args=(interface, known_devices, stop_event))
     sniff_thread.start()
 
-    monitor_thread = threading.Thread(target=monitor_devices, args=(known_devices,stop_event,inactive_devices))
+    # Start monitoring devices
+    monitor_thread = threading.Thread(target=monitor_devices, args=(known_devices, stop_event, inactive_devices))
     monitor_thread.start()
 
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print("Stopping DHCP sniffing and device monitoring...")
+        print("Stopping...")
         stop_event.set()
+        socket_io_thread.join()
         sniff_thread.join()
         monitor_thread.join()
-        print("Threads stopped.")
