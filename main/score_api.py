@@ -63,6 +63,8 @@ def update_weights(ml_weight=None, ea_weight=None, cr_weight=None, st_weight=Non
     if st_weight is not None:
         payload['st_weight'] = st_weight
     
+
+    
     # Send a PUT request to the Flask endpoint
     response = requests.put(url, json=payload)
     
