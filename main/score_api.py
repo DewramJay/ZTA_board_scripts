@@ -73,6 +73,8 @@ def update_weights(ml_weight=None, ea_weight=None, cr_weight=None, st_weight=Non
         print(f"Failed to update weights. Status code: {response.status_code}")
         print(f"Response: {response.json()}")
 
+        
+
 
 # # Calculate gamma(t)
 # gamma_t = calculate_gamma(gamma_0, eta, A_t)
