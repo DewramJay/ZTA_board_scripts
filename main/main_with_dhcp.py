@@ -36,9 +36,8 @@ def handle_re_evaluate_event(data):
     interface_description = data['interface_description']
     print(f"Re-evaluating device with IP: {device_ip}, MAC: {device_mac}, hostname: {hostname}, interface: {interface_description}")
     
-    check_device_status(device_mac, device_ip)
-    # Call your function here
-    operations_on_device(device_ip, device_mac, hostname, interface_description)
+    if check_device_status(device_mac, device_ip):
+        operations_on_device(device_ip, device_mac, hostname, interface_description)
 
 # New endpoint to trigger operations on a device
 # @app.route('/trigger_operations', methods=['POST'])
@@ -211,6 +210,7 @@ def re_evaluate(device_ip, device_mac, hostname, interface_description):
         print("Error in re-evaluation.")
 
 def operations_on_device(device_ip, device_mac, hostname, interface_description):
+    
     """Perform operations on the device."""
     print(f"Operating on device: IP {device_ip}, MAC {device_mac}, Hostname {hostname}")
     save_new_device(device_ip, device_mac, hostname, 'active')
@@ -223,7 +223,7 @@ def operations_on_device(device_ip, device_mac, hostname, interface_description)
 
 def sniff_dhcp_packets(interface, known_devices, stop_event):
     """Sniff DHCP packets to identify new devices."""
-    
+    operations_ongoing_devics = {}
     while not stop_event.is_set():
         
         def process_packet(packet):
@@ -236,18 +236,21 @@ def sniff_dhcp_packets(interface, known_devices, stop_event):
                     print(f"Device reconnected: IP {device_info['ip']}, MAC {mac_address}, Hostname {device_info['hostname']}")
                     known_devices[mac_address] = inactive_devices.pop(mac_address)
                     
-                else:
+                elif mac_address not in known_devices:
+                    # print("))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))")
                     # If the device is new, add it to the known devices list
                     known_devices[mac_address] = device_info
                     print(f"New device seen: IP {device_info['ip']}, MAC {device_info['mac']}, Hostname {device_info['hostname']}")
+                    # Perform operations on the device in a separate thread
+                    operations_on_device_thread = threading.Thread(target=operations_on_device, args=(device_info['ip'], device_info['mac'], device_info['hostname'], interface))
+                    operations_on_device_thread.start()
                 
                 # Display the current state of active and inactive devices
                 print(f"\nActive devices: {known_devices}")
                 print(f"Inactive devices: {inactive_devices}\n")
                 
-                # Perform operations on the device in a separate thread
-                operations_on_device_thread = threading.Thread(target=operations_on_device, args=(device_info['ip'], device_info['mac'], device_info['hostname'], interface))
-                operations_on_device_thread.start()
+                
+
 
         print(f"Sniffing on interface: {interface}")
         sniff(filter="udp and (port 67 or port 68)", prn=process_packet, iface=interface, store=0)
@@ -262,14 +265,34 @@ def monitor_devices(known_devices, stop_event, inactive_devices):
                 print(f"Device {mac_address} is inactive")
                 inactive_devices[device_info['ip']] = mac_address  # Move to inactive devices
                 del known_devices[mac_address]  # Remove from known devices
+                update_status(mac_address, 'inactive')
+
 
             time.sleep(2)
+
+import requests
+
+def update_all_devices_to_inactive():
+    # Sending POST request to update the status of all devices to 'inactive'
+    response = requests.post(f"http://localhost:2000/api/update_all_devices_status")
+    
+    if response.status_code == 200:
+        # Status update successful
+        print("All devices updated to inactive successfully.")
+    else:
+        # There was an error in updating the status
+        print(f"Error updating devices: {response.json().get('error', 'Unknown error')}")
+
+# Call the function
+update_all_devices_to_inactive()
+
 
 if __name__ == '__main__':
     interface = "wlan0"  # Replace with your network interface
     known_devices = {}
     inactive_devices = {}
     stop_event = threading.Event()
+    update_all_devices_to_inactive()
 
     # Start the Socket.IO connection in a separate thread
     socket_io_thread = threading.Thread(target=start_socket_io)

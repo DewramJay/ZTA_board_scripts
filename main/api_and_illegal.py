@@ -78,6 +78,9 @@ def store_in_db(device_mac, blacklist_mac):
 
 def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_usage,unencrypted_data,illegal_connections):
     # def process_packet(packet,target_ip, collected_data,connecting_devices):
+
+    count = 0
+
     if 'IP' in packet:
         source_ip = packet['IP'].src
         dest_ip = packet['IP'].dst
@@ -97,6 +100,9 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
                     api_usage.append(dst_mac)
                     # print("hhhhh")
                     store_in_db(target_mac, dst_mac)
+                    count += 1
+
+            
         
             # Store the packet
             collected_packets.append(packet)
