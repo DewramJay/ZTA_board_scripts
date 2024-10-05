@@ -12,6 +12,7 @@ def scan_ports(target_ip, device_mac):
     nm.scan(hosts=target_ip, arguments='-p 1-7700 -T4')  # Scan all ports
     result='strong'
     open_ports = []
+    print('hhh')
 
     for host in nm.all_hosts():
         for proto in nm[host].all_protocols():
