@@ -72,5 +72,19 @@ cursor.execute('''
 # Commit the changes
 conn.commit()
 
+cursor = conn.cursor()
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS illegal_connection_alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    src_mac TEXT,
+    dst_mac TEXT
+)
+''')
+
+
+
+conn.commit()
+
 # Close the connection
 conn.close()

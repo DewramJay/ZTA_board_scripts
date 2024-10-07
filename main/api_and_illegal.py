@@ -69,16 +69,28 @@ def store_in_db(device_mac, blacklist_mac):
         }
     response = requests.post("http://localhost:2000/api/add_url_alert", json=payload)
     if response.status_code == 200:
-        print("Device added to the database")
+        print("Url alert added to the database")
         return response.json()
     else:
-        print(f"Failed to add device: {response.status_code}, {response.text}")
+        print(f"Failed to add url alert: {response.status_code}, {response.text}")
+        return {"status": "error", "message": response.text}
+
+def store_illegal_connections(src_mac, dst_mac):
+    payload = {
+            "src_mac": src_mac,
+            "dst_mac": dst_mac
+        }
+    response = requests.post("http://localhost:2000/api/add_illegal_connection", json=payload)
+    if response.status_code == 200:
+        print("illegal connection added to the database")
+        return response.json()
+    else:
+        print(f"Failed to add illegal connection: {response.status_code}, {response.text}")
         return {"status": "error", "message": response.text}
 
 
 def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_usage,unencrypted_data,illegal_connections):
     # def process_packet(packet,target_ip, collected_data,connecting_devices):
-
     count = 0
 
     if 'IP' in packet:
@@ -115,6 +127,8 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
             # Check if the destination IP is in the allowed list
             if dst_mac not in allowed_devices:
                 print(f"Device: ({target_mac}) :Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
+                # add illegal connection to database
+                store_illegal_connections(src_mac, dst_mac)
                 illegal_connections.append(dst_mac)
 
         unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0],target_mac)
@@ -151,6 +165,7 @@ def monitor_api(interface_description,device_mac):
     
     
     sniff(iface=interface_description, prn=lambda x: process_packet(x, device_mac, collected_packets, blacklisted_macs,api_usage,unencrypted_data,illegal_connections), timeout=20, store=0)
+    
     if api_usage:
         # print(f"no of illegal conections : {len(api_usage)}")
         print(f" Device: ({device_mac}) : The score for unauthorized api usage  {score_illegal_conn(len(api_usage))} *******************")

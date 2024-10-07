@@ -12,15 +12,9 @@ def analyze_packet(packet, unencrypted_data,device_mac):
             payload.decode('ascii')
             # print(f"Device: ({device_mac}) :Unencrypted payload:", payload)
             unencrypted_data += 1
-            if delta_flag != 1:
-                print("f")
-                delta(0)
-                delta_flag = 2
+            delta(0)
         except UnicodeDecodeError:
-            if delta_flag != 2:
-                print("g")
-                delta(1)
-                delta_flag = 1
+            delta(1)
             # pass
             # print("Encrypted or binary payload:")
 
