@@ -270,7 +270,6 @@ def monitor_devices(known_devices, stop_event, inactive_devices):
 
             time.sleep(2)
 
-import requests
 
 def update_all_devices_to_inactive():
     # Sending POST request to update the status of all devices to 'inactive'
@@ -283,8 +282,7 @@ def update_all_devices_to_inactive():
         # There was an error in updating the status
         print(f"Error updating devices: {response.json().get('error', 'Unknown error')}")
 
-# Call the function
-update_all_devices_to_inactive()
+
 
 
 if __name__ == '__main__':

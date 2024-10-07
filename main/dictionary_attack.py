@@ -51,11 +51,11 @@ def get_device(device):
         
         if result['found']:
             #weak
-            return 1
+            return 0
     
         else:
             #strong
-            return 0
+            return 1
     
 # if __name__ == '__main__':
 #     device = '192.168.137.148'  # Replace with the target IP address

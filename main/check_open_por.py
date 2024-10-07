@@ -4,13 +4,14 @@ import json
 import requests
 from dictionary_attack import get_device
 from score_open_ports import score_calculation_openPorts
+from ease_of_access_score import EA_score
 
 def scan_ports(target_ip, device_mac):
     # target_ip = '192.168.137.202'
     print(f'Device: ({device_mac}) :Checking for open ports..')
     nm = nmap.PortScanner()
     nm.scan(hosts=target_ip, arguments='-p 1-7700 -T4')  # Scan all ports
-    result='strong'
+    result = 1 # strong
     open_ports = []
     print('hhh')
 
@@ -28,15 +29,17 @@ def scan_ports(target_ip, device_mac):
 
                         print(result)
                     else:
-                        result="strong"
+                        result = 1
                         print("port 22 is not open")
                 else:
                     print("no open ports")
-                    result="strong"
+                    result = 1
                         
     print(f"Open ports :{open_ports}")
     score_ports=score_calculation_openPorts(open_ports)
     print(f"Device: ({device_mac}) :The score for open ports {score_ports} *******************")
+    
+    EA_score(score_ports, result)
 
     # conn = sqlite3.connect('/home/kali/Desktop/project/eval/ZTA_main_2/main/new_devices.db')
     # cursor = conn.cursor()

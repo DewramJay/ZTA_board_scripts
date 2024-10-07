@@ -81,7 +81,7 @@ def update_weights(ml_weight=None, ea_weight=None, cr_weight=None, st_weight=Non
 # # Calculate gamma(t)
 # gamma_t = calculate_gamma(gamma_0, eta, A_t)
 # print(f"Gamma(t): {gamma_t}")
-score_illegal_conn(6)
+# score_illegal_conn(6)
 
 
 

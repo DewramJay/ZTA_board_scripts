@@ -12,16 +12,28 @@ def analyze_packet(packet, unencrypted_data,device_mac):
             payload.decode('ascii')
             # print(f"Device: ({device_mac}) :Unencrypted payload:", payload)
             unencrypted_data += 1
+            if delta_flag != 1:
+                print("f")
+                delta(0)
+                delta_flag = 2
         except UnicodeDecodeError:
-            pass
+            if delta_flag != 2:
+                print("g")
+                delta(1)
+                delta_flag = 1
+            # pass
             # print("Encrypted or binary payload:")
 
     return unencrypted_data  # Return the updated value
 
 
 
-def delta(t, delta_0, phi, S_t):
-    
+def delta(S_t):
+
+    t = 0  # example time t
+    delta_0 = 1.0  # example delta_0 value
+    phi = 0.5  # example phi value
+
     delta_t = delta_0 * np.exp(-phi * S_t)
     update_weights(st_weight=delta_t)
     return delta_t
@@ -53,11 +65,11 @@ def update_weights(ml_weight=None, ea_weight=None, cr_weight=None, st_weight=Non
         print(f"Failed to update weights. Status code: {response.status_code}")
         print(f"Response: {response.json()}")
 
-# Example usage:
-t = 0  # example time t
-delta_0 = 1.0  # example delta_0 value
-phi = 0.5  # example phi value
-S_t = 2.0  # example S(t) value
+# # Example usage:
+# t = 0  # example time t
+# delta_0 = 1.0  # example delta_0 value
+# phi = 0.5  # example phi value
+# S_t = 2.0  # example S(t) value
 
-delta_value = delta(t, delta_0, phi, S_t)
-print(f"delta(t) = {delta_value}")
+# delta_value = delta(t, delta_0, phi, S_t)
+# print(f"delta(t) = {delta_value}")
