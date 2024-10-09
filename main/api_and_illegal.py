@@ -54,6 +54,29 @@ def is_mac_in_database(mac_address):
     finally:
         conn.close()
 
+def check_connected_device_status(mac_address):
+    # Define the Flask API endpoint URL
+    url = 'http://localhost:2000/api/check_connected_device_status' 
+
+    # Set up the parameters with the MAC address
+    params = {'mac_address': mac_address}
+
+    try:
+        # Send a GET request to the Flask API
+        response = requests.get(url, params=params)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Parse the JSON response
+            data = response.json()
+            return data['status']
+        else:
+            print(f"Error: Unable to contact the API. Status code: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
 
 def resolve_dns(ip):
     try:
@@ -120,16 +143,29 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
             collected_packets.append(packet)
 
         if is_mac_in_database(src_mac) and is_mac_in_database(dst_mac):
-            # Get allowed devices for the source IP
-            allowed_devices = get_allowed_devices(src_mac)
-            print(f"allowed devices: {allowed_devices}")
-            
-            # Check if the destination IP is in the allowed list
-            if dst_mac not in allowed_devices:
-                print(f"Device: ({target_mac}) :Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
-                # add illegal connection to database
-                store_illegal_connections(src_mac, dst_mac)
-                illegal_connections.append(dst_mac)
+            if check_connected_device_status(src_mac):
+                # Get allowed devices for the source IP
+                allowed_devices = get_allowed_devices(src_mac)
+                print(f"allowed devices: {allowed_devices}")
+                
+                # Check if the destination IP is in the allowed list
+                if dst_mac not in allowed_devices:
+                    print(f"Device: ({target_mac}) :Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
+                    # add illegal connection to database
+                    store_illegal_connections(src_mac, dst_mac)
+                    illegal_connections.append(dst_mac)
+
+            if check_connected_device_status(dst_mac):
+                # Get allowed devices for the source IP
+                allowed_devices = get_allowed_devices(dst_mac)
+                print(f"allowed devices: {allowed_devices}")
+                
+                # Check if the destination IP is in the allowed list
+                if src_mac not in allowed_devices:
+                    print(f"Device: ({target_mac}) :Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
+                    # add illegal connection to database
+                    store_illegal_connections(src_mac, dst_mac)
+                    illegal_connections.append(src_mac)
 
         unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0],target_mac)
         # print(f"unencrypted data -----: {unencrypted_data[0]}")         

@@ -214,6 +214,7 @@ def operations_on_device(device_ip, device_mac, hostname, interface_description)
     """Perform operations on the device."""
     print(f"Operating on device: IP {device_ip}, MAC {device_mac}, Hostname {hostname}")
     save_new_device(device_ip, device_mac, hostname, 'active')
+    # check the connections within first 30 seconds.
     check_illegal(interface_description, device_ip, device_mac)
     scan_ports(device_ip, device_mac)
     time.sleep(3)
