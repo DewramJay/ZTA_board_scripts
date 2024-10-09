@@ -45,7 +45,7 @@ def calculate_gamma(A_t):
     # gamma(t) = gamma_0 + eta * log(1 + A_i(t))
     gamma_t = gamma_0 + eta * math.log(1 + A_t)
 
-    update_weights(cr_weight=gamma_t)
+    # update_weights(cr_weight=gamma_t)
     return gamma_t
 
 def update_weights(ml_weight=None, ea_weight=None, cr_weight=None, st_weight=None):

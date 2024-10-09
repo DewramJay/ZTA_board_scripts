@@ -63,7 +63,7 @@ def check_connected_device_status(mac_address):
 
     try:
         # Send a GET request to the Flask API
-        response = requests.get(url, params=params)
+        response = requests.get(url, json=params)
 
         # Check if the request was successful
         if response.status_code == 200:
@@ -143,6 +143,7 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
             collected_packets.append(packet)
 
         if is_mac_in_database(src_mac) and is_mac_in_database(dst_mac):
+            print("hi hi")
             if check_connected_device_status(src_mac):
                 # Get allowed devices for the source IP
                 allowed_devices = get_allowed_devices(src_mac)

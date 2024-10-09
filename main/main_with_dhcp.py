@@ -215,7 +215,7 @@ def operations_on_device(device_ip, device_mac, hostname, interface_description)
     print(f"Operating on device: IP {device_ip}, MAC {device_mac}, Hostname {hostname}")
     save_new_device(device_ip, device_mac, hostname, 'active')
     # check the connections within first 30 seconds.
-    check_illegal(interface_description, device_ip, device_mac)
+    # check_illegal(interface_description, device_ip, device_mac)
     scan_ports(device_ip, device_mac)
     time.sleep(3)
     monitor_api(interface_description, device_mac)
@@ -263,7 +263,7 @@ def monitor_devices(known_devices, stop_event, inactive_devices):
         for mac_address, device_info in list(known_devices.items()):
             ip_address = device_info['ip']
             if not ping_device(ip_address):
-                print(f"Device {mac_address} is inactive")
+                print(f"Device {mac_address} {ping_device(ip_address)}is inactive")
                 inactive_devices[device_info['ip']] = mac_address  # Move to inactive devices
                 del known_devices[mac_address]  # Remove from known devices
                 update_status(mac_address, 'inactive')
