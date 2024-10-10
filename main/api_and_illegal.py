@@ -127,14 +127,14 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
             dns_name = resolve_dns(dest_ip) if dst_mac != target_mac else resolve_dns(source_ip)
             # print(dns_name)
             # Check if dst_mac is in the blacklisted MAC addresses
-            if dst_mac in blacklisted_macs:
+            if dest_ip in blacklisted_macs:
 
-                # print(f"Blacklisted MAC address detected: {dst_mac}")
+                print(f"Blacklisted MAC address detected: {dst_mac}")
 
                 if dst_mac not in api_usage:
                     api_usage.append(dst_mac)
                     # print("hhhhh")
-                    store_in_db(target_mac, dst_mac)
+                    store_in_db(target_mac, dest_ip)
                     count += 1
 
             
@@ -153,8 +153,9 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
                 if dst_mac not in allowed_devices:
                     print(f"Device: ({target_mac}) :Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
                     # add illegal connection to database
-                    store_illegal_connections(src_mac, dst_mac)
-                    illegal_connections.append(dst_mac)
+                    if dst_mac not in illegal_connections:
+                        store_illegal_connections(src_mac, dst_mac)
+                        illegal_connections.append(dst_mac)
 
             if check_connected_device_status(dst_mac):
                 # Get allowed devices for the source IP
@@ -165,8 +166,9 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
                 if src_mac not in allowed_devices:
                     print(f"Device: ({target_mac}) :Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
                     # add illegal connection to database
-                    store_illegal_connections(src_mac, dst_mac)
-                    illegal_connections.append(src_mac)
+                    if src_mac not in illegal_connections:
+                        store_illegal_connections(src_mac, dst_mac)
+                        illegal_connections.append(src_mac)
 
         unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0],target_mac)
         # print(f"unencrypted data -----: {unencrypted_data[0]}")         
@@ -193,12 +195,13 @@ def monitor_api(interface_description,device_mac):
     
     # Define the list of blacklisted MAC addresses
     blacklisted_macs = [
-        '5a:96:1d:ca:62:2d','c6:2d:c5:0d:36:16',
-        '00:1a:2b:3c:4d:5e','b8:27:eb:88:13:e7','ba:8a:d5:8e:53:30'
+        "23.47.247.99", "109.176.239.70"
+        # '5a:96:1d:ca:62:2d','c6:2d:c5:0d:36:16',
+        # '00:1a:2b:3c:4d:5e','b8:27:eb:88:13:e7','ba:8a:d5:8e:53:30'
         # Add more MAC addresses as needed
     ]
 
-    delete_alerts()
+    # delete_alerts()
     
     
     sniff(iface=interface_description, prn=lambda x: process_packet(x, device_mac, collected_packets, blacklisted_macs,api_usage,unencrypted_data,illegal_connections), timeout=20, store=0)

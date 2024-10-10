@@ -7,7 +7,7 @@ import requests
 from check_open_por import scan_ports
 from illagel_and_api_2 import check_illegal
 from check_vendor import get_vendor
-from api_and_illegal import monitor_api
+from api_and_illegal import monitor_api, delete_alerts
 from scapy.all import *
 import socketio
 from flask import Flask, request, jsonify  # Import Flask and request
@@ -283,7 +283,14 @@ def update_all_devices_to_inactive():
         # There was an error in updating the status
         print(f"Error updating devices: {response.json().get('error', 'Unknown error')}")
 
-
+def delete_illegal_connections_alert():
+    response = requests.delete("http://localhost:2000/api/delete_illegal_connections")
+    if response.status_code == 200:
+        print("deleted all illegal connection alert")
+        return response.json()
+    else:
+        print(f"Failed to delete illegal connection alerts: {response.status_code}, {response.text}")
+        return {"status": "error", "message": response.text}
 
 
 if __name__ == '__main__':
@@ -292,6 +299,8 @@ if __name__ == '__main__':
     inactive_devices = {}
     stop_event = threading.Event()
     update_all_devices_to_inactive()
+    delete_alerts()
+    delete_illegal_connections_alert()
 
     # Start the Socket.IO connection in a separate thread
     socket_io_thread = threading.Thread(target=start_socket_io)
