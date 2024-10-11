@@ -83,7 +83,6 @@ CREATE TABLE IF NOT EXISTS illegal_connection_alerts (
 ''')
 
 
-
 conn.commit()
 
 # Close the connection

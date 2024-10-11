@@ -155,6 +155,7 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
                     # add illegal connection to database
                     if dst_mac not in illegal_connections:
                         store_illegal_connections(src_mac, dst_mac)
+                        store_illegal_connections(dst_mac, src_mac)
                         illegal_connections.append(dst_mac)
 
             if check_connected_device_status(dst_mac):
@@ -168,6 +169,7 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
                     # add illegal connection to database
                     if src_mac not in illegal_connections:
                         store_illegal_connections(src_mac, dst_mac)
+                        store_illegal_connections(dst_mac, src_mac)
                         illegal_connections.append(src_mac)
 
         unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0],target_mac)
