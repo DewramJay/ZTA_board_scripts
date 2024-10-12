@@ -8,6 +8,7 @@ def EA_score(mac_address, port_score, password_score):
     illegal_connection = get_illegal_connection_count(mac_address)
 
     score = 0.56 * port_score + 0.33 * password_score + 0.11 * illegal_connection
+    update_score(mac_address, ea=score)
     return beta(mac_address, score)
 
 
@@ -45,26 +46,25 @@ def update_score(mac_address, ml=None, ea=None, cr=None, st=None):
     # Create the payload with the weights that you want to update
     payload = {}
     payload['mac_address'] = mac_address
-    if ml_weight is not None:
-        payload['ml'] = ml_weight
-    if ea_weight is not None:
-        payload['ea'] = ea_weight
-    if cr_weight is not None:
-        payload['cr'] = cr_weight
-    if st_weight is not None:
-        payload['st'] = st_weight
+    if ml is not None:
+        payload['ml'] = ml
+    if ea is not None:
+        payload['ea'] = ea
+    if cr is not None:
+        payload['cr'] = cr
+    if st is not None:
+        payload['st'] = st
     
 
-    
     # Send a PUT request to the Flask endpoint
-    response = requests.put(url, json=payload)
+    response = requests.post(url, json=payload)
     
     # Check if the request was successful
     if response.status_code == 200:
         print("Weights updated successfully.")
     else:
         print(f"Failed to update weights. Status code: {response.status_code}")
-        print(f"Response: {response.json()}")
+        # print(f"Response: {response.json()}")
 
 
 def beta(mac_address, E_t):
@@ -74,8 +74,8 @@ def beta(mac_address, E_t):
     theta_E = 0.5  # example theta_E value
     
     beta_t = 1 / (1 + np.exp(-k_val * (E_t - theta_E)))
-    # update_weights(ea_weight=beta_t)
-    update_score(mac_address, ea_weight=beta_t)
+    print("beta_t")
+    # update_score(mac_address, ea=beta_t)
     print(beta_t)
 
     return beta_t
