@@ -5,6 +5,7 @@ def score_illegal_conn(number):
 
     A_t = get_anomaly_count()
     print(A_t)
+    update_score(mac_address, cr=A_t)
 
     print(calculate_gamma(A_t))
 
@@ -16,13 +17,38 @@ def score_illegal_conn(number):
     
     return score
 
-def get_anomaly_count():
+# def get_anomaly_count():
+#     try:
+#         # Replace with the actual URL where your Flask app is running
+#         url = "http://127.0.0.1:2000/api/get_blacklist_mac_count"
+        
+#         # Make the GET request
+#         response = requests.get(url)
+        
+#         # Check if the request was successful
+#         if response.status_code == 200:
+#             # Parse the JSON response
+#             data = response.json()
+#             anomaly_count = data['anomaly_count']
+#             print(f"anomaly count: {data['anomaly_count']}")
+#             return anomaly_count
+#         else:
+#             print(f"Failed to get data. Status code: {response.status_code}")
+#             return 0
+    
+#     except requests.exceptions.RequestException as e:
+#         print(f"Error occurred: {e}")
+
+def get_anomaly_count(mac_address):
+    payload = {
+        "mac_address" : mac_address
+    }
     try:
         # Replace with the actual URL where your Flask app is running
-        url = "http://127.0.0.1:2000/api/get_blacklist_mac_count"
+        url = "http://127.0.0.1:2000/api/get_blacklist_mac_count_by_mac"
         
         # Make the GET request
-        response = requests.get(url)
+        response = requests.get(url, json=payload)
         
         # Check if the request was successful
         if response.status_code == 200:
@@ -37,6 +63,7 @@ def get_anomaly_count():
     
     except requests.exceptions.RequestException as e:
         print(f"Error occurred: {e}")
+
 
 def calculate_gamma(A_t):
     gamma_0 = 2.0  # initial gamma value
@@ -75,7 +102,34 @@ def update_weights(ml_weight=None, ea_weight=None, cr_weight=None, st_weight=Non
         print(f"Failed to update weights. Status code: {response.status_code}")
         print(f"Response: {response.json()}")
 
-        
+def update_score(mac_address, ml=None, ea=None, cr=None, st=None):
+    # Define the API endpoint URL
+    url = 'http://127.0.0.1:2000/api/trust_score'
+    
+    # Create the payload with the weights that you want to update
+    payload = {}
+    payload['mac_address'] = mac_address
+    if ml_weight is not None:
+        payload['ml'] = ml_weight
+    if ea_weight is not None:
+        payload['ea'] = ea_weight
+    if cr_weight is not None:
+        payload['cr'] = cr_weight
+    if st_weight is not None:
+        payload['st'] = st_weight
+    
+
+    
+    # Send a PUT request to the Flask endpoint
+    response = requests.put(url, json=payload)
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        print("Weights updated successfully.")
+    else:
+        print(f"Failed to update weights. Status code: {response.status_code}")
+        print(f"Response: {response.json()}")
+      
 
 
 # # Calculate gamma(t)

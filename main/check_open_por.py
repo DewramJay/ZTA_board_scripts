@@ -39,7 +39,7 @@ def scan_ports(target_ip, device_mac):
     score_ports=score_calculation_openPorts(open_ports)
     print(f"Device: ({device_mac}) :The score for open ports {score_ports} *******************")
     
-    EA_score(score_ports, result)
+    EA_score(device_mac, score_ports, result)
 
     # conn = sqlite3.connect('/home/kali/Desktop/project/eval/ZTA_main_2/main/new_devices.db')
     # cursor = conn.cursor()

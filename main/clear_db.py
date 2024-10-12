@@ -33,7 +33,7 @@ cursor = conn.cursor()
 # cursor.execute("UPDATE new_devices SET connected_device_status = 0")
 
 cursor.execute('''
-DELETE FROM new_devices WHERE mac_adress = 'd4:e9:8a:fe:f4:93';
+    DELETE FROM new_devices WHERE mac_adress = 'd4:e9:8a:fe:f4:93';
 ''')
 
 # Commit the changes and close the connection

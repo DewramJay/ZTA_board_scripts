@@ -18,15 +18,14 @@ cursor.execute('''
 ''')
 
 # Commit the changes
-conn.commit()
+# conn.commit()
 
-cursor.execute('''
-    INSERT INTO weights (ml_weight, ea_weight, cr_weight, st_weight)
-    VALUES (0, 0, 0, 0)
-''')
+# cursor.execute('''
+#     DELETE FROM trust_score WHERE mac_address = '12:fd:87:2c:8d:84';
+# ''')
 
-# Commit the changes
-conn.commit()
+# # Commit the changes
+# conn.commit()
 
 
 
@@ -44,6 +43,24 @@ cursor.execute('''
 
 
 conn.commit()
+
+cursor = conn.cursor()
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS trust_score (
+    mac_address TEXT PRIMARY KEY,
+    ml REAL,
+    ea REAL,
+    cr REAL,
+    st REAL,
+    total REAL
+)
+''')
+
+
+
+conn.commit()
+
 
 
 
