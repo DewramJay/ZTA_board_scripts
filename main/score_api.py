@@ -1,7 +1,7 @@
 import requests
 import math
 
-def score_illegal_conn(number):
+def score_illegal_conn(mac_address, number):
 
     A_t = get_anomaly_count()
     print(A_t)

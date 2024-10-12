@@ -59,6 +59,36 @@ def update_weights(ml_weight=None, ea_weight=None, cr_weight=None, st_weight=Non
         print(f"Failed to update weights. Status code: {response.status_code}")
         print(f"Response: {response.json()}")
 
+def update_score(mac_address, ml=None, ea=None, cr=None, st=None):
+    # Define the API endpoint URL
+    url = 'http://127.0.0.1:2000/api/trust_score'
+    
+    # Create the payload with the weights that you want to update
+    payload = {}
+    payload['mac_address'] = mac_address
+    if ml_weight is not None:
+        payload['ml'] = ml_weight
+    if ea_weight is not None:
+        payload['ea'] = ea_weight
+    if cr_weight is not None:
+        payload['cr'] = cr_weight
+    if st_weight is not None:
+        payload['st'] = st_weight
+    
+
+    
+    # Send a PUT request to the Flask endpoint
+    response = requests.put(url, json=payload)
+    
+    # Check if the request was successful
+    if response.status_code == 200:
+        print("Weights updated successfully.")
+    else:
+        print(f"Failed to update weights. Status code: {response.status_code}")
+        print(f"Response: {response.json()}")
+      
+
+
 # # Example usage:
 # t = 0  # example time t
 # delta_0 = 1.0  # example delta_0 value

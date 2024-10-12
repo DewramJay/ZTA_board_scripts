@@ -210,7 +210,7 @@ def monitor_api(interface_description,device_mac):
     
     if api_usage:
         # print(f"no of illegal conections : {len(api_usage)}")
-        print(f" Device: ({device_mac}) : The score for unauthorized api usage  {score_illegal_conn(len(api_usage))} *******************")
+        print(f" Device: ({device_mac}) : The score for unauthorized api usage  {score_illegal_conn(device_mac, len(api_usage))} *******************")
     
     if unencrypted_data[0]:
         print(f"Device: ({device_mac}) :The number of unencrypted data {unencrypted_data[0]} *******************")
