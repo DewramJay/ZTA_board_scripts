@@ -14,6 +14,7 @@ from encryption_methods import analyze_pcap
 from scapy.all import *
 import socketio
 from flask import Flask, request, jsonify  # Import Flask and request
+import time
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -213,7 +214,7 @@ def re_evaluate(device_ip, device_mac, hostname, interface_description):
         print("Error in re-evaluation.")
 
 def operations_on_device(device_ip, device_mac, hostname, interface_description):
-    
+    # start_time = time.time()
     """Perform operations on the device."""
     print(f"Operating on device: IP {device_ip}, MAC {device_mac}, Hostname {hostname}")
     save_new_device(device_ip, device_mac, hostname, 'active')
@@ -221,10 +222,13 @@ def operations_on_device(device_ip, device_mac, hostname, interface_description)
     # check_illegal(interface_description, device_ip, device_mac)
     scan_ports(device_ip, device_mac)
     time.sleep(3)
+    re_evaluate(device_ip, device_mac, hostname, interface_description)
     monitor_api(interface_description, device_mac)
     analyze_pcap()
+    # end_time = time.time()
+    # duration = end_time - start_time
+    # print(f"Total time taken: {duration}")
     # Call re-evaluation endpoint
-    re_evaluate(device_ip, device_mac, hostname, interface_description)
 
 def sniff_dhcp_packets(interface, known_devices, stop_event):
     """Sniff DHCP packets to identify new devices."""

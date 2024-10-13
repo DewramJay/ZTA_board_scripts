@@ -81,7 +81,7 @@ def scan_ports(target_ip, device_mac):
 def update_evaluation(mac_address, ip_address, open_ports, password):
     payload = {
         "mac_address": mac_address,
-        "ip_address": ip_address,
+        "target_ip": ip_address,
         "open_ports": open_ports,
         "password": password
     }

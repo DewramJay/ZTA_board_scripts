@@ -2,7 +2,7 @@ from scapy.all import *
 import numpy as np
 import requests
 
-def analyze_packet():
+def analyze_packet(mac_address):
 
     pcap_file_path = 'packet_capture.pcap'
     # Read the packets from the pcap file
@@ -26,8 +26,17 @@ def analyze_packet():
                 encrypted_count += 1
 
     # Calculate fractions
+
     fraction_unencrypted = unencrypted_count / total_packets if total_packets > 0 else 0
     fraction_encrypted = encrypted_count / total_packets if total_packets > 0 else 0
+
+    # Calculate score where higher encrypted count results in a score closer to 1
+    score = fraction_encrypted  # directly using the fraction of encrypted packets as the score
+    print("score")
+    print(score)
+
+    update_score(mac_address, st=score)
+
 
     return {
         'total_packets': total_packets,
@@ -83,26 +92,25 @@ def update_score(mac_address, ml=None, ea=None, cr=None, st=None):
     # Create the payload with the weights that you want to update
     payload = {}
     payload['mac_address'] = mac_address
-    if ml_weight is not None:
-        payload['ml'] = ml_weight
-    if ea_weight is not None:
-        payload['ea'] = ea_weight
-    if cr_weight is not None:
-        payload['cr'] = cr_weight
-    if st_weight is not None:
-        payload['st'] = st_weight
+    if ml is not None:
+        payload['ml'] = ml
+    if ea is not None:
+        payload['ea'] = ea
+    if cr is not None:
+        payload['cr'] = cr
+    if st is not None:
+        payload['st'] = st
     
 
     
     # Send a PUT request to the Flask endpoint
-    response = requests.put(url, json=payload)
+    response = requests.post(url, json=payload)
     
     # Check if the request was successful
     if response.status_code == 200:
         print("Weights updated successfully.")
     else:
         print(f"Failed to update weights. Status code: {response.status_code}")
-        print(f"Response: {response.json()}")
       
 
 

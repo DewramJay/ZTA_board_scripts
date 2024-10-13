@@ -177,7 +177,7 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
                         illegal_connections.append(src_mac)
 
         # unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0],target_mac)
-        unencrypted_data[0]=analyze_packet()
+        
         # print(f"unencrypted data -----: {unencrypted_data[0]}")         
 
 def delete_alerts():
@@ -215,8 +215,11 @@ def monitor_api(interface_description,device_mac):
     sniff(iface=interface_description, prn=lambda x: process_packet(x, device_mac, collected_packets, blacklisted_macs,api_usage,unencrypted_data,illegal_connections), timeout=20, store=0)
     
     if collected_packets:
+        
         wrpcap(output_file, collected_packets)
         print(f"Packets saved to {output_file}")
+        unencrypted_data[0]=analyze_packet(device_mac)
+
 
     if api_usage:
         # print(f"no of illegal conections : {len(api_usage)}")
