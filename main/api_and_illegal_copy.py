@@ -5,7 +5,8 @@ import sqlite3
 import json
 import requests
 from score_api import score_illegal_conn
-from ecryption_checker import analyze_packet
+from ecryption_checker_copy import analyze_packet
+# from ecryption_checker import analyze_packet
 
 def get_allowed_devices(device_mac):
     conn = sqlite3.connect('new_devices.db')
@@ -142,6 +143,9 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
             # Store the packet
             collected_packets.append(packet)
 
+        # print("fff")
+        # print(src_mac)
+        # print(dst_mac)
         if is_mac_in_database(src_mac) and is_mac_in_database(dst_mac):
             print("hi hi")
             if check_connected_device_status(src_mac):
@@ -172,7 +176,8 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
                         store_illegal_connections(dst_mac, src_mac)
                         illegal_connections.append(src_mac)
 
-        unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0],target_mac)
+        # unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0],target_mac)
+        unencrypted_data[0]=analyze_packet()
         # print(f"unencrypted data -----: {unencrypted_data[0]}")         
 
 def delete_alerts():

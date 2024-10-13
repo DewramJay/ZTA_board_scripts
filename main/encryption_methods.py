@@ -2,16 +2,16 @@ import pyshark
 
 # Define encryption scores and mappings
 encryption_scores = {
-    'AES-256': 10,
-    'AES-128': 9,
-    'ChaCha20': 9,
-    '3DES': 5,
-    'RC4': 2,
-    'DES': 1,
-    'MD5': 1,
-    'SHA-1': 3,
-    'SHA-256': 9,
-    'SHA-3': 10
+    'AES-256': 1.0,  # 10/10
+    'AES-128': 0.9,  # 9/10
+    'ChaCha20': 0.9, # 9/10
+    '3DES': 0.5,     # 5/10
+    'RC4': 0.2,      # 2/10
+    'DES': 0.1,      # 1/10
+    'MD5': 0.1,      # 1/10
+    'SHA-1': 0.3,    # 3/10
+    'SHA-256': 0.9,  # 9/10
+    'SHA-3': 1.0     # 10/10
 }
 
 # Map common TLS cipher suite hex codes to encryption mechanisms
@@ -42,7 +42,7 @@ def get_encryption_mechanism(cipher_suite_hex):
     return cipher_suite_mapping.get(cipher_suite_hex, 'Other/Unrecognized')
 
 def analyze_pcap():
-    pcap_file = 'Desktop/project/eval/ZTA_main_2/main/packet_capture.pcap'
+    pcap_file = 'packet_capture.pcap'
     """ Analyze a PCAP file for encryption mechanisms and count occurrences. """
     cap = pyshark.FileCapture(pcap_file)
     

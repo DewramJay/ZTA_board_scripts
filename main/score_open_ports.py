@@ -39,7 +39,7 @@ def score_calculation_openPorts(ports):
         print(score_openPorts)
         return score_openPorts
     else:
-        return 0
+        return 1
 
 
 

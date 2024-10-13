@@ -18,14 +18,14 @@ cursor.execute('''
 ''')
 
 # Commit the changes
-# conn.commit()
+conn.commit()
 
-# cursor.execute('''
-#     DELETE FROM trust_score WHERE mac_address = '12:fd:87:2c:8d:84';
-# ''')
+cursor.execute('''
+    DROP TABLE IF EXISTS trust_score;
+''')
 
-# # Commit the changes
-# conn.commit()
+# Commit the changes
+conn.commit()
 
 
 

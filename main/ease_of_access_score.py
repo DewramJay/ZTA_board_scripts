@@ -3,6 +3,7 @@ import requests
 
 def EA_score(mac_address, port_score, password_score):
     print("open port score calculation")
+    print(port_score)
     print(password_score)
     # illegal_connection = 1
     no_illegal_connection = get_illegal_connection_count(mac_address)
@@ -10,6 +11,8 @@ def EA_score(mac_address, port_score, password_score):
     x = no_illegal_connection
     n = 1
     illegal_connection = np.exp(-n * x)
+    print("illegal_connection")
+    print(illegal_connection)
 
     score = 0.56 * port_score + 0.33 * password_score + 0.11 * illegal_connection
     update_score(mac_address, ea=score)
