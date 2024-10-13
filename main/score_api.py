@@ -4,8 +4,13 @@ import math
 def score_illegal_conn(mac_address, number):
 
     A_t = get_anomaly_count(mac_address)
+
+    x = A_t
+    n = 1
+    cyber_risk = math.exp(-n * x)
+
     print(A_t)
-    update_score(mac_address, cr=A_t)
+    update_score(mac_address, cr=cyber_risk)
 
     print(calculate_gamma(A_t))
 

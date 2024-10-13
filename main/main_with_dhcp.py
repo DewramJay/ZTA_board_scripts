@@ -7,7 +7,9 @@ import requests
 from check_open_por import scan_ports
 from illagel_and_api_2 import check_illegal
 from check_vendor import get_vendor
-from api_and_illegal import monitor_api, delete_alerts
+# from api_and_illegal import monitor_api, delete_alerts
+from api_and_illegal_copy import monitor_api, delete_alerts
+from encryption_methods import analyze_pcap
 from scapy.all import *
 import socketio
 from flask import Flask, request, jsonify  # Import Flask and request
@@ -219,6 +221,7 @@ def operations_on_device(device_ip, device_mac, hostname, interface_description)
     scan_ports(device_ip, device_mac)
     time.sleep(3)
     monitor_api(interface_description, device_mac)
+    analyze_pcap()
     # Call re-evaluation endpoint
     re_evaluate(device_ip, device_mac, hostname, interface_description)
 
