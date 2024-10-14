@@ -213,6 +213,31 @@ def re_evaluate(device_ip, device_mac, hostname, interface_description):
     else:
         print("Error in re-evaluation.")
 
+################# time to time delete illegal connection ################
+def delete_alerts_by_src_mac(src_mac):
+    # Prepare the payload
+    payload = {'src_mac': src_mac}
+    
+    # Set the headers
+    headers = {'Content-Type': 'application/json'}
+    
+    try:
+        # Send the DELETE request
+        response = requests.delete("http://localhost:2000/api/delete_alerts_by_src_mac", 
+                                   data=json.dumps(payload), headers=headers)
+        
+        # Check for the response status code
+        if response.status_code == 200:
+            print("Success:", response.json())
+        elif response.status_code == 404:
+            print("No matching rows found.")
+        else:
+            print("Error:", response.json())
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+#########################################################################
+
 def operations_on_device(device_ip, device_mac, hostname, interface_description):
     # start_time = time.time()
     """Perform operations on the device."""

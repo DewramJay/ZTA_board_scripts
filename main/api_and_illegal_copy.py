@@ -162,19 +162,19 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
                         store_illegal_connections(dst_mac, src_mac)
                         illegal_connections.append(dst_mac)
 
-            if check_connected_device_status(dst_mac):
-                # Get allowed devices for the source IP
-                allowed_devices = get_allowed_devices(dst_mac)
-                print(f"allowed devices: {allowed_devices}")
+            # if check_connected_device_status(dst_mac):
+            #     # Get allowed devices for the source IP
+            #     allowed_devices = get_allowed_devices(dst_mac)
+            #     print(f"allowed devices: {allowed_devices}")
                 
-                # Check if the destination IP is in the allowed list
-                if src_mac not in allowed_devices:
-                    print(f"Device: ({target_mac}) :Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
-                    # add illegal connection to database
-                    if src_mac not in illegal_connections:
-                        store_illegal_connections(src_mac, dst_mac)
-                        store_illegal_connections(dst_mac, src_mac)
-                        illegal_connections.append(src_mac)
+            #     # Check if the destination IP is in the allowed list
+            #     if src_mac not in allowed_devices:
+            #         print(f"Device: ({target_mac}) :Illegal connection detected: Source {src_mac} -> Destination: {dst_mac}")
+            #         # add illegal connection to database
+            #         if src_mac not in illegal_connections:
+            #             store_illegal_connections(src_mac, dst_mac)
+            #             store_illegal_connections(dst_mac, src_mac)
+            #             illegal_connections.append(src_mac)
 
         # unencrypted_data[0]=analyze_packet(packet,unencrypted_data[0],target_mac)
         
