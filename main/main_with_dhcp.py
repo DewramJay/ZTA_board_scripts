@@ -219,12 +219,11 @@ def delete_alerts_by_src_mac(src_mac):
     payload = {'src_mac': src_mac}
     
     # Set the headers
-    headers = {'Content-Type': 'application/json'}
+    # headers = {'Content-Type': 'application/json'}
     
     try:
         # Send the DELETE request
-        response = requests.delete("http://localhost:2000/api/delete_alerts_by_src_mac", 
-                                   data=json.dumps(payload), headers=headers)
+        response = requests.delete("http://localhost:2000/api/delete_alerts_by_src_mac",json=payload )
         
         # Check for the response status code
         if response.status_code == 200:
@@ -236,6 +235,30 @@ def delete_alerts_by_src_mac(src_mac):
     
     except requests.exceptions.RequestException as e:
         print(f"Request failed: {e}")
+#########################################################################
+
+################# time to time delete url alerts ################
+def delete_url_alerts(mac_address):
+    # Construct the URL for the API endpoint
+    url = "http://localhost:2000/api/delete_all_alert"
+    
+    # Create a dictionary for query parameters
+    params = {}
+    params['mac_address'] = mac_address
+    
+    try:
+        # Send a DELETE request to the endpoint
+        response = requests.delete(url, params=params)
+        
+        # Check the response status code
+        if response.status_code == 200:
+            print("Response:", response.json())
+        else:
+            print(f"Failed to delete alerts. Status code: {response.status_code}")
+            print("Response:", response.text)
+    
+    except requests.RequestException as e:
+        print(f"Error making request: {e}")
 #########################################################################
 
 def operations_on_device(device_ip, device_mac, hostname, interface_description):
@@ -250,6 +273,8 @@ def operations_on_device(device_ip, device_mac, hostname, interface_description)
     re_evaluate(device_ip, device_mac, hostname, interface_description)
     monitor_api(interface_description, device_mac)
     analyze_pcap()
+    delete_url_alerts(device_mac)
+    delete_alerts_by_src_mac(device_mac)
     # end_time = time.time()
     # duration = end_time - start_time
     # print(f"Total time taken: {duration}")
