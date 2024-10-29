@@ -198,7 +198,7 @@ def monitor_api(interface_description,device_mac):
     collected_packets = []
     unencrypted_data = [0]
     illegal_connections = []
-    output_file="packet_capture.pcap"
+    output_file=f"./captured_pcap/packet_capture{device_mac}.pcap"
     
     
     # Define the list of blacklisted MAC addresses

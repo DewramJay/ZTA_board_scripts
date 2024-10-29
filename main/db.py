@@ -82,6 +82,22 @@ CREATE TABLE IF NOT EXISTS illegal_connection_alerts (
 )
 ''')
 
+# conn.commit()
+
+# cursor.execute('DROP TABLE IF EXISTS timesnd;')
+
+
+# conn.commit()
+
+conn.commit()
+
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS timesr1 (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    time REAL
+)
+''')
+
 
 conn.commit()
 

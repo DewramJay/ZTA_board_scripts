@@ -4,7 +4,7 @@ import requests
 
 def analyze_packet(mac_address):
 
-    pcap_file_path = 'packet_capture.pcap'
+    pcap_file_path = f'./captured_pcap/packet_capture{mac_address}.pcap'
     # Read the packets from the pcap file
     packets = rdpcap(pcap_file_path)
     

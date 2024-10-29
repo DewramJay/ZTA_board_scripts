@@ -41,8 +41,8 @@ def get_encryption_mechanism(cipher_suite_hex):
     """ Get the encryption mechanism based on the cipher suite hex code. """
     return cipher_suite_mapping.get(cipher_suite_hex, 'Other/Unrecognized')
 
-def analyze_pcap():
-    pcap_file = 'packet_capture.pcap'
+def analyze_pcap(device_mac):
+    pcap_file = f'./captured_pcap/packet_capture{device_mac}.pcap'
     """ Analyze a PCAP file for encryption mechanisms and count occurrences. """
     cap = pyshark.FileCapture(pcap_file)
     

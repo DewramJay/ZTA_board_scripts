@@ -10,6 +10,7 @@ from check_vendor import get_vendor
 # from api_and_illegal import monitor_api, delete_alerts
 from api_and_illegal_copy import monitor_api, delete_alerts
 from encryption_methods import analyze_pcap
+from ml_model import read_file
 # from encryption_method_proto import analyze_pcap
 from scapy.all import *
 import socketio
@@ -261,8 +262,33 @@ def delete_url_alerts(mac_address):
         print(f"Error making request: {e}")
 #########################################################################
 
+################################
+def add_time(time):
+    url = 'http://127.0.0.1:2000/api/add_time'
+
+    # Data to be sent to the endpoint
+    data = {
+        'time': time  # Example time data
+    }
+
+    try:
+        # Make a POST request to the API
+        response = requests.post(url, json=data)
+
+        # Check if the request was successful (status code 200-299)
+        if response.status_code == 200:
+            print("Response:", response.json())
+        else:
+            print(f"Failed with status code {response.status_code}")
+            print("Error response:", response.text)
+
+    except requests.exceptions.RequestException as e:
+        # Handle exceptions such as connection errors
+        print("An error occurred:", str(e))
+################################
+
 def operations_on_device(device_ip, device_mac, hostname, interface_description):
-    # start_time = time.time()
+    start_time = time.time()
     """Perform operations on the device."""
     print(f"Operating on device: IP {device_ip}, MAC {device_mac}, Hostname {hostname}")
     save_new_device(device_ip, device_mac, hostname, 'active')
@@ -272,12 +298,16 @@ def operations_on_device(device_ip, device_mac, hostname, interface_description)
     time.sleep(3)
     re_evaluate(device_ip, device_mac, hostname, interface_description)
     monitor_api(interface_description, device_mac)
-    analyze_pcap()
+    # analyze_pcap(device_mac)
+    read_file(device_mac)
     delete_url_alerts(device_mac)
     delete_alerts_by_src_mac(device_mac)
-    # end_time = time.time()
-    # duration = end_time - start_time
-    # print(f"Total time taken: {duration}")
+    
+    end_time = time.time()
+    duration = end_time - start_time
+    print(f"Total time taken: {duration}")
+    if device_mac == "ec:0b:ae:fc:37:00":
+        add_time(duration)
     # Call re-evaluation endpoint
 
 def sniff_dhcp_packets(interface, known_devices, stop_event):
