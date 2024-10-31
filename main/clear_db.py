@@ -23,7 +23,7 @@
 import sqlite3
 
 # Connect to your SQLite database
-conn = sqlite3.connect('new_devices.db')
+conn = sqlite3.connect('score_model.db')
 cursor = conn.cursor()
 
 # # Step 1: Add a new column to the table
@@ -33,7 +33,7 @@ cursor = conn.cursor()
 # cursor.execute("UPDATE new_devices SET connected_device_status = 0")
 
 cursor.execute('''
-    DELETE FROM new_devices WHERE mac_adress = 'd4:e9:8a:fe:f4:93';
+    ALTER TABLE trust_score ADD COLUMN check_status INTEGER DEFAULT 0;
 ''')
 
 # Commit the changes and close the connection
