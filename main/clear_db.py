@@ -33,7 +33,7 @@ cursor = conn.cursor()
 # cursor.execute("UPDATE new_devices SET connected_device_status = 0")
 
 cursor.execute('''
-    ALTER TABLE trust_score ADD COLUMN check_status INTEGER DEFAULT 0;
+DELETE FROM trust_score WHERE mac_address = "12:fd:87:2c:8d:84";
 ''')
 
 # Commit the changes and close the connection
