@@ -20,22 +20,39 @@
 
 
 
+# import sqlite3
+
+# # Connect to your SQLite database
+# conn = sqlite3.connect('score_model.db')
+# cursor = conn.cursor()
+
+# # # Step 1: Add a new column to the table
+# # cursor.execute("ALTER TABLE new_devices ADD COLUMN connected_device_status INTEGER")
+
+# # # Step 2: Set all values in the new column to 0
+# # cursor.execute("UPDATE new_devices SET connected_device_status = 0")
+
+# cursor.execute('''
+# DELETE FROM trust_score WHERE mac_address = "b8:27:eb:2e:ec:ec";
+# ''')
+
+# # Commit the changes and close the connection
+# conn.commit()
+# conn.close()
+
 import sqlite3
 
 # Connect to your SQLite database
 conn = sqlite3.connect('score_model.db')
 cursor = conn.cursor()
 
-# # Step 1: Add a new column to the table
-# cursor.execute("ALTER TABLE new_devices ADD COLUMN connected_device_status INTEGER")
+# Delete all rows from the table
+cursor.execute("DELETE FROM trust_score")
 
-# # Step 2: Set all values in the new column to 0
-# cursor.execute("UPDATE new_devices SET connected_device_status = 0")
-
-cursor.execute('''
-DELETE FROM trust_score WHERE mac_address = "12:fd:87:2c:8d:84";
-''')
+# cursor.execute("DELETE FROM evaluation WHERE ip_address = '192.168.28.227'")
 
 # Commit the changes and close the connection
 conn.commit()
 conn.close()
+
+print("All rows have been deleted from the table.")

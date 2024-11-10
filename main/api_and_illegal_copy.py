@@ -132,8 +132,8 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
 
                 print(f"Blacklisted MAC address detected: {dst_mac}")
 
-                if dst_mac not in api_usage:
-                    api_usage.append(dst_mac)
+                if dest_ip not in api_usage:
+                    api_usage.append(dest_ip)
                     # print("hhhhh")
                     store_in_db(target_mac, dest_ip)
                     count += 1
@@ -147,11 +147,11 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
         # print(src_mac)
         # print(dst_mac)
         if is_mac_in_database(src_mac) and is_mac_in_database(dst_mac):
-            print("hi hi")
+            
             if check_connected_device_status(src_mac):
                 # Get allowed devices for the source IP
                 allowed_devices = get_allowed_devices(src_mac)
-                print(f"allowed devices: {allowed_devices}")
+                # print(f"allowed devices: {allowed_devices}")
                 
                 # Check if the destination IP is in the allowed list
                 if dst_mac not in allowed_devices:
@@ -159,7 +159,7 @@ def process_packet(packet, target_mac, collected_packets, blacklisted_macs,api_u
                     # add illegal connection to database
                     if dst_mac not in illegal_connections:
                         store_illegal_connections(src_mac, dst_mac)
-                        store_illegal_connections(dst_mac, src_mac)
+                        # store_illegal_connections(dst_mac, src_mac)
                         illegal_connections.append(dst_mac)
 
             # if check_connected_device_status(dst_mac):
@@ -224,7 +224,9 @@ def monitor_api(interface_description,device_mac):
     if api_usage:
         # print(f"no of illegal conections : {len(api_usage)}")
         print(f" Device: ({device_mac}) : The score for unauthorized api usage  {score_illegal_conn(device_mac, len(api_usage))} *******************")
-    
+    else :
+        score_illegal_conn(device_mac, len(api_usage))
+
     if unencrypted_data[0]:
         print(f"Device: ({device_mac}) :The number of unencrypted data {unencrypted_data[0]} *******************")
     else:
@@ -232,6 +234,6 @@ def monitor_api(interface_description,device_mac):
 
     if illegal_connections:
         # print(f"no of illegal conections : {len(api_usage)}")
-        print(f"Device: ({device_mac}) :The score for unauthorized api usage {illegal_connections} *******************")
+        print(f"Device: ({device_mac}) :The count for illegal connection {illegal_connections} *******************")
 
         

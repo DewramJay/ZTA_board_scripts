@@ -7,7 +7,7 @@ def EA_score(mac_address, port_score, password_score):
     print(password_score)
     # illegal_connection = 1
     no_illegal_connection = get_illegal_connection_count(mac_address)
-
+    print(f"noofillegal{no_illegal_connection}")
     x = no_illegal_connection
     n = 1
     illegal_connection = np.exp(-n * x)
@@ -113,30 +113,57 @@ def beta(mac_address, E_t):
 
 
 def get_illegal_connection_count(mac_address):
-    payload = {
-        "mac_address": mac_address
-    }
+    if check_connected_device_status(mac_address):
+        payload = {
+            "mac_address": mac_address
+        }
+        try:
+            # Replace with the actual URL where your Flask app is running
+            url = "http://127.0.0.1:2000/api/get_related_mac_count"
+            
+            # Make the GET request
+            response = requests.get(url, json=payload)
+            
+            # Check if the request was successful
+            if response.status_code == 200:
+                # Parse the JSON response
+                data = response.json()
+                related_mac_count = data['related_mac_count']
+                print(f"related_mac_count: {data['related_mac_count']}")
+                return related_mac_count
+            else:
+                print(f"Failed to get data. Status code: {response.status_code}")
+                return 0
+        
+        except requests.exceptions.RequestException as e:
+            print(f"Error occurred: {e}")
+    else:
+        print("no status----------------------------")
+        return 0
+
+
+def check_connected_device_status(mac_address):
+    # Define the Flask API endpoint URL
+    url = 'http://localhost:2000/api/check_connected_device_status' 
+
+    # Set up the parameters with the MAC address
+    params = {'mac_address': mac_address}
+
     try:
-        # Replace with the actual URL where your Flask app is running
-        url = "http://127.0.0.1:2000/api/get_related_mac_count"
-        
-        # Make the GET request
-        response = requests.get(url, json=payload)
-        
+        # Send a GET request to the Flask API
+        response = requests.get(url, json=params)
+
         # Check if the request was successful
         if response.status_code == 200:
             # Parse the JSON response
             data = response.json()
-            related_mac_count = data['related_mac_count']
-            print(f"related_mac_count: {data['related_mac_count']}")
-            return related_mac_count
+            return data['status']
         else:
-            print(f"Failed to get data. Status code: {response.status_code}")
-            return 0
-    
-    except requests.exceptions.RequestException as e:
-        print(f"Error occurred: {e}")
-
+            print(f"Error: Unable to contact the API. Status code: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
 
 
 # beta_value = EA_score(0.2, 0.1)

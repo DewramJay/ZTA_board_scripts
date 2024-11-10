@@ -262,6 +262,29 @@ def delete_url_alerts(mac_address):
         print(f"Error making request: {e}")
 #########################################################################
 
+def check_connected_device_status(mac_address):
+    # Define the Flask API endpoint URL
+    url = 'http://localhost:2000/api/check_connected_device_status' 
+
+    # Set up the parameters with the MAC address
+    params = {'mac_address': mac_address}
+
+    try:
+        # Send a GET request to the Flask API
+        response = requests.get(url, json=params)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            # Parse the JSON response
+            data = response.json()
+            return data['status']
+        else:
+            print(f"Error: Unable to contact the API. Status code: {response.status_code}")
+            return None
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
 ################################
 def add_time(time):
     url = 'http://127.0.0.1:2000/api/add_time'
@@ -296,12 +319,15 @@ def operations_on_device(device_ip, device_mac, hostname, interface_description)
     # check_illegal(interface_description, device_ip, device_mac)
     scan_ports(device_ip, device_mac)
     time.sleep(3)
+    if check_connected_device_status(device_mac):
+        delete_alerts_by_src_mac(device_mac)
+    delete_url_alerts(device_mac)   
     re_evaluate(device_ip, device_mac, hostname, interface_description)
     monitor_api(interface_description, device_mac)
     # analyze_pcap(device_mac)
     read_file(device_mac)
-    delete_url_alerts(device_mac)
-    delete_alerts_by_src_mac(device_mac)
+    
+    
     
     end_time = time.time()
     duration = end_time - start_time

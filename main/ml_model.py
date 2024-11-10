@@ -52,9 +52,11 @@ def read_file(device_mac):
             json_response = response.json()
             print(json_response)
             anomalies = json_response.get('anomalies')    
-            if anomalies > 1 :
+            if anomalies > 100 :
                 print(anomalies)
                 score_calculation(device_mac)
+            else : 
+                update_score(device_mac, ml=1)
 
         except requests.exceptions.JSONDecodeError:
             # If the response isn't JSON, print the raw response
